@@ -3,4 +3,4 @@ import { DownloadController } from "../controllers/download.controller";
 
 export const downloadRouter = Router();
 
-downloadRouter.get("/album", DownloadController.downloadSong);
+downloadRouter.get("/song/:id", DownloadController.downloadSong);
