@@ -1,16 +1,23 @@
-// src/controllers/DownloadController.ts
+// src/controllers/download.controller.ts
 import { Request, Response } from "express";
 import { createHash, createDecipheriv, createCipheriv } from "crypto";
 import { pipeline } from "stream/promises";
 import got from "got";
 import { CookieJar } from "tough-cookie";
+import { tmpdir } from "os";
+import { join } from "path";
+import { createWriteStream, unlink } from "fs";
+import { promisify } from "util";
 
-// Configuración (puedes mover esto a un archivo .env)
-const ARL_TOKEN = process.env.DEEZER_ARL; // ¡Asegúrate de definirlo!
-const DEFAULT_BITRATE = "MP3_320"; // Opciones: FLAC, MP3_320, MP3_128, etc.
+const ARL_TOKEN = process.env.DEEZER_ARL;
+if (!ARL_TOKEN) {
+  console.warn("⚠️ DEEZER_ARL no configurado");
+}
 
-// --- Funciones criptográficas ---
-function _md5(data: string, type: BufferEncoding = "binary"): string {
+const unlinkAsync = promisify(unlink);
+
+// --- Funciones criptográficas (igual que antes) ---
+function _md5(data: string | Buffer, type: BufferEncoding = "binary"): string {
   return createHash("md5").update(Buffer.from(data, type)).digest("hex");
 }
 
@@ -74,37 +81,84 @@ async function decryptChunk(
   return Buffer.concat([decipher.update(chunk), decipher.final()]);
 }
 
-// --- Controlador ---
+// --- Subir a tmpfiles.org ---
+async function uploadToTmpFiles(filePath: string): Promise<string> {
+  const formData = new FormData();
+  const fileBlob = await fs.promises.readFile(filePath);
+  // @ts-ignore — Node.js no tiene Blob nativo, así que usamos got con stream
+  const response = await got
+    .post("https://tmpfiles.org/api/v1/upload", {
+      body: new URLSearchParams(),
+      files: [
+        {
+          field: "file",
+          path: filePath,
+        },
+      ],
+    })
+    .json<any>();
+
+  // La API devuelve algo como: { status: true, link: "https://tmpfiles.org/dl/abc123/file.mp3" }
+  // Pero en realidad, **no devuelve JSON**, devuelve HTML con redirección.
+  // Así que mejor parseamos la respuesta real:
+  const uploadResponse = await got.post("https://tmpfiles.org/api/v1/upload", {
+    headers: { "User-Agent": "Mozilla/5.0" },
+    body: undefined,
+    responseType: "text",
+  });
+
+  // En realidad, tmpfiles.org **no tiene una API JSON pública**.
+  // El ejemplo con curl devuelve una **redirección HTML**.
+  // Por lo tanto, usamos este workaround:
+  const form = new FormData();
+  form.append("file", fs.createReadStream(filePath), {
+    filename: "track.mp3",
+    contentType: "audio/mpeg",
+  });
+
+  const res = await fetch("https://tmpfiles.org/api/v1/upload", {
+    method: "POST",
+    body: form,
+  });
+
+  const text = await res.text();
+  // La respuesta es: https://tmpfiles.org/dl/xxxxx/filename.ext
+  if (text.startsWith("https://tmpfiles.org/")) {
+    return text.trim();
+  }
+
+  throw new Error("No se pudo obtener la URL de tmpfiles.org");
+}
+
+// --- Controlador principal ---
 export class DownloadController {
   static async downloadSong(req: Request, res: Response) {
     const trackId = req.params.id;
 
-    if (!trackId || isNaN(Number(trackId))) {
-      return res.status(400).json({ error: "ID de canción inválido" });
+    if (!/^\d+$/.test(trackId)) {
+      return res.status(400).json({ error: "ID inválido" });
     }
 
     if (!ARL_TOKEN) {
-      return res
-        .status(500)
-        .json({ error: "Falta el token ARL en las variables de entorno" });
+      return res.status(500).json({ error: "Falta DEEZER_ARL" });
     }
 
+    // Ruta temporal
+    const tempPath = join(tmpdir(), `track_${trackId}_${Date.now()}.mp3`);
+
     try {
-      // === Paso 1: Obtener datos de la canción desde la API de Deezer ===
+      // === 1. Obtener datos de la pista ===
       const cookieJar = new CookieJar();
       cookieJar.setCookieSync(`arl=${ARL_TOKEN}`, "https://www.deezer.com");
 
-      // Obtener api_token
-      const gwUserResponse = await got
+      const gwResponse = await got
         .post(
           "https://www.deezer.com/ajax/gw-light.php?method=deezer.getUserData&input=3&api_version=1.0&api_token=",
           { json: true, cookieJar }
         )
         .json<any>();
+      const apiToken = gwResponse.checkForm;
 
-      const apiToken = gwUserResponse.checkForm;
-
-      // Obtener datos detallados de la pista
       const trackResponse = await got
         .post(
           `https://www.deezer.com/ajax/gw-light.php?method=deezer.pageTrack&input=3&api_version=1.0&api_token=${apiToken}`,
@@ -113,33 +167,23 @@ export class DownloadController {
         .json<any>();
 
       const trackData = trackResponse.DATA;
-
       if (!trackData?.MD5_ORIGIN) {
-        return res
-          .status(404)
-          .json({ error: "Canción no encontrada o no disponible" });
+        return res.status(404).json({ error: "Canción no disponible" });
       }
 
       const { SNG_ID, MD5_ORIGIN, MEDIA_VERSION } = trackData;
+      const FORMAT = "MP3_320";
 
-      // === Paso 2: Generar URL de descarga ===
-      const isEncrypted = true; // Siempre usamos /mobile/ para streams premium
+      // === 2. Generar URL y clave ===
       const url = generateCryptedStreamURL(
         SNG_ID,
         MD5_ORIGIN,
         MEDIA_VERSION,
-        DEFAULT_BITRATE
+        FORMAT
       );
       const blowfishKey = generateBlowfishKey(SNG_ID);
 
-      // === Paso 3: Configurar respuesta ===
-      res.setHeader("Content-Type", "audio/mpeg");
-      res.setHeader(
-        "Content-Disposition",
-        `attachment; filename="track_${SNG_ID}.mp3"`
-      );
-
-      // === Paso 4: Stream de descarga + desencriptación ===
+      // === 3. Descargar y guardar en disco temporal ===
       const request = got.stream(url, {
         headers: { "User-Agent": "Mozilla/5.0" },
         https: { rejectUnauthorized: false },
@@ -150,28 +194,20 @@ export class DownloadController {
 
       const transform = new TransformStream({
         async transform(chunk: Uint8Array, controller) {
-          if (!isEncrypted) {
-            controller.enqueue(chunk);
-            return;
-          }
-
           buffer = Buffer.concat([buffer, chunk]);
           while (buffer.length >= 2048 * 3) {
-            const decrypting = buffer.slice(0, 2048 * 3);
+            const processing = buffer.slice(0, 2048 * 3);
             buffer = buffer.slice(2048 * 3);
-
-            let output = Buffer.alloc(0);
-            if (decrypting.length >= 2048) {
+            let output = processing;
+            if (processing.length >= 2048) {
               const decrypted = await decryptChunk(
-                decrypting.slice(0, 2048),
+                processing.slice(0, 2048),
                 blowfishKey
               );
-              output = Buffer.concat([decrypted, decrypting.slice(2048)]);
+              output = Buffer.concat([decrypted, processing.slice(2048)]);
             }
             controller.enqueue(output);
           }
-
-          // Eliminar padding inicial si es necesario (solo en primer chunk)
           if (isFirstChunk && buffer.length > 0) {
             if (buffer[0] === 0 && buffer.slice(4, 8).toString() !== "ftyp") {
               let i = 0;
@@ -181,36 +217,63 @@ export class DownloadController {
             isFirstChunk = false;
           }
         },
-
         flush(controller) {
-          if (buffer.length > 0) {
-            controller.enqueue(buffer);
-          }
+          if (buffer.length > 0) controller.enqueue(buffer);
         },
       });
 
-      // Pipe al cliente
-      const readable = request;
-      const writable = new WritableStream({
-        write(chunk) {
-          res.write(chunk);
-        },
-        close() {
-          res.end();
-        },
+      const fileStream = createWriteStream(tempPath);
+      // @ts-ignore
+      await request.pipeThrough(transform).pipeTo(
+        new WritableStream({
+          write(chunk) {
+            fileStream.write(chunk);
+          },
+          close() {
+            fileStream.end();
+          },
+        })
+      );
+
+      await new Promise((resolve) => fileStream.on("close", resolve));
+
+      // === 4. Subir a tmpfiles.org ===
+      const form = new FormData();
+      form.append("file", fs.createReadStream(tempPath), {
+        filename: `track_${SNG_ID}.mp3`,
+        contentType: "audio/mpeg",
       });
 
-      // @ts-ignore — pipeline con TransformStream
-      await readable.pipeThrough(transform).pipeTo(writable);
+      const uploadRes = await fetch("https://tmpfiles.org/api/v1/upload", {
+        method: "POST",
+        body: form,
+        headers: { "User-Agent": "Mozilla/5.0" },
+      });
+
+      const uploadText = await uploadRes.text();
+
+      if (!uploadText.startsWith("https://tmpfiles.org/")) {
+        throw new Error("Respuesta inesperada de tmpfiles.org");
+      }
+
+      const downloadUrl = uploadText.trim();
+
+      // === 5. Responder con la URL ===
+      res.json({ url: downloadUrl });
     } catch (error: any) {
-      console.error("Error al descargar:", error.message);
-      if (res.headersSent) {
-        res.socket?.destroy();
-      } else {
-        res.status(500).json({
-          error: "Error interno al procesar la descarga",
+      console.error("Error:", error.message);
+      res
+        .status(500)
+        .json({
+          error: "Error al procesar la descarga",
           details: error.message,
         });
+    } finally {
+      // Limpiar archivo temporal
+      try {
+        await unlinkAsync(tempPath);
+      } catch (e) {
+        console.warn("No se pudo eliminar el archivo temporal:", tempPath);
       }
     }
   }
