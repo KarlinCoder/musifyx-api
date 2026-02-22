@@ -41,7 +41,7 @@ export const searchArtists = async (req: Request, res: Response) => {
     },
   );
 
-  res.json(data);
+  return res.json(data);
 };
 
 export const searchPlaylists = async (req: Request, res: Response) => {
@@ -55,5 +55,53 @@ export const searchPlaylists = async (req: Request, res: Response) => {
     },
   );
 
-  res.json(data);
+  return res.json(data);
+};
+
+export const getAlbum = async (req: Request, res: Response) => {
+  const id = req.params.id;
+
+  const { data } = await axios(`${DEEZER_API_URL}/album/${id}`, {
+    headers: { Origin: "https://musifyx.karlincoder.com" },
+  });
+
+  return res.json(data);
+};
+
+export const getArtist = async (req: Request, res: Response) => {
+  const id = req.params.id;
+
+  const { data } = await axios(`${DEEZER_API_URL}/artist/${id}`, {
+    headers: { Origin: "https://musifyx.karlincoder.com" },
+  });
+
+  return res.json(data);
+};
+
+export const getArtistTop10 = async (req: Request, res: Response) => {
+  const id = req.params.id;
+
+  const { data } = await axios(`${DEEZER_API_URL}/artist/${id}/top?limit=10`, {
+    headers: { Origin: "https://musifyx.karlincoder.com" },
+  });
+
+  return res.json(data);
+};
+
+export const getPlaylist = async (req: Request, res: Response) => {
+  const id = req.params.id;
+
+  const { data } = await axios(`${DEEZER_API_URL}/playlist/${id}/`, {
+    headers: { Origin: "https://musifyx.karlincoder.com" },
+  });
+
+  return res.json(data);
+};
+
+export const getPopular = async (_req: Request, res: Response) => {
+  const { data } = await axios(`${DEEZER_API_URL}/chart`, {
+    headers: { Origin: "https://musifyx.karlincoder.com" },
+  });
+
+  return res.json(data);
 };

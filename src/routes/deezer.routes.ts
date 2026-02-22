@@ -1,5 +1,10 @@
 import { Router } from "express";
 import {
+  getAlbum,
+  getArtist,
+  getArtistTop10,
+  getPlaylist,
+  getPopular,
   searchAlbums,
   searchArtists,
   searchPlaylists,
@@ -11,7 +16,14 @@ export const deezerRouter = Router();
 deezerRouter.get("/", (_req, res) => {
   return res.send("Empieza a buscar");
 });
-deezerRouter.get("/tracks", searchTracks);
-deezerRouter.get("/albums", searchAlbums);
-deezerRouter.get("/artists", searchArtists);
-deezerRouter.get("/playlists", searchPlaylists);
+
+deezerRouter.get("/track", searchTracks);
+deezerRouter.get("/album", searchAlbums);
+deezerRouter.get("/artist", searchArtists);
+deezerRouter.get("/playlist", searchPlaylists);
+
+deezerRouter.get("/album/:id/", getAlbum);
+deezerRouter.get("/artist/:id", getArtist);
+deezerRouter.get("/artist/:id/top", getArtistTop10);
+deezerRouter.get("/playlist/:id", getPlaylist);
+deezerRouter.get("/popular", getPopular);
