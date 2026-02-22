@@ -1,2 +1,4 @@
 export const DEEZER_API_URL =
-  "https://cors-anywhere.com/https://api.deezer.com";
+  process.env.NODE_ENV === "development"
+    ? "https://cors-anywhere.com/https://api.deezer.com"
+    : "https://api.deezer.com";
