@@ -2,8 +2,8 @@ import { Router } from "express";
 import {
   getAlbum,
   getArtist,
+  getArtistAlbums,
   getArtistTop10,
-  getCharts,
   getPlaylist,
   getPopular,
   searchAlbums,
@@ -25,7 +25,7 @@ deezerRouter.get("/playlist", searchPlaylists);
 
 deezerRouter.get("/album/:id", getAlbum);
 deezerRouter.get("/artist/:id", getArtist);
+deezerRouter.get("/artist/:id/alnums", getArtistAlbums);
 deezerRouter.get("/artist/:id/top", getArtistTop10);
 deezerRouter.get("/playlist/:id", getPlaylist);
 deezerRouter.get("/popular", getPopular);
-deezerRouter.get("/charts", getCharts);
