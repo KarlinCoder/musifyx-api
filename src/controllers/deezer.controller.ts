@@ -4,8 +4,8 @@ import { DEEZER_API_URL } from "../config";
 
 export const searchTracks = async (req: Request, res: Response) => {
   const q = req.query.q.toString();
-  const limit = parseInt(req.query?.limit.toString());
-  const index = parseInt(req.query?.index.toString());
+  const limit = parseInt(req.query.limit?.toString());
+  const index = parseInt(req.query.index?.toString());
 
   const { data } = await axios(
     `${DEEZER_API_URL}/search?q=${encodeURIComponent(q)}&limit=${limit ? limit : 20}&index=${index ? index : 0}`,
