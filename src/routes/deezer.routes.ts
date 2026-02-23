@@ -25,7 +25,7 @@ deezerRouter.get("/playlist", searchPlaylists);
 
 deezerRouter.get("/album/:id", getAlbum);
 deezerRouter.get("/artist/:id", getArtist);
-deezerRouter.get("/artist/:id/alnums", getArtistAlbums);
+deezerRouter.get("/artist/:id/albums", getArtistAlbums);
 deezerRouter.get("/artist/:id/top", getArtistTop10);
 deezerRouter.get("/playlist/:id", getPlaylist);
 deezerRouter.get("/popular", getPopular);
