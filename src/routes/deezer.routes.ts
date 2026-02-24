@@ -3,6 +3,9 @@ import {
   getAlbum,
   getArtist,
   getArtistAlbums,
+  getArtistPlaylists,
+  getArtistRadio,
+  getArtistRelated,
   getArtistTop10,
   getPlaylist,
   getPopular,
@@ -27,8 +30,8 @@ deezerRouter.get("/album/:id", getAlbum);
 deezerRouter.get("/artist/:id", getArtist);
 deezerRouter.get("/artist/:id/albums", getArtistAlbums);
 deezerRouter.get("/artist/:id/top", getArtistTop10);
-deezerRouter.get("/artist/:id/playlists", getArtistTop10);
-deezerRouter.get("/artist/:id/radio", getArtistTop10);
-deezerRouter.get("/artist/:id/related", getArtistTop10);
+deezerRouter.get("/artist/:id/playlists", getArtistPlaylists);
+deezerRouter.get("/artist/:id/radio", getArtistRadio);
+deezerRouter.get("/artist/:id/related", getArtistRelated);
 deezerRouter.get("/playlist/:id", getPlaylist);
 deezerRouter.get("/popular", getPopular);
