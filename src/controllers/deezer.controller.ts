@@ -125,7 +125,7 @@ export const getArtistPlaylists = async (req: Request, res: Response) => {
 export const getArtistRelated = async (req: Request, res: Response) => {
   const id = req.params.id;
 
-  const { data } = await axios(`${DEEZER_API_URL}/artist/${id}/albums`, {
+  const { data } = await axios(`${DEEZER_API_URL}/artist/${id}/related`, {
     headers: { Origin: "https://musifyx.karlincoder.com" },
   });
 
