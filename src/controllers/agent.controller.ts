@@ -41,18 +41,11 @@ export const getRecomendation = async (req: Request, res: Response) => {
         headers: {
           Authorization: `Bearer ${apiKey}`,
           "Content-Type": "application/json",
-          // 3. Encabezados estándar para evitar caché en proxies/CDN
           "Cache-Control":
             "no-store, no-cache, must-revalidate, proxy-revalidate",
           Pragma: "no-cache",
           Expires: "0",
-          // 4. Encabezado custom (si Pollinations lo respeta) para forzar no-caché
           "X-No-Cache": "true",
-        },
-        // 5. (Opcional pero recomendado) Añadir timestamp a la URL como query param
-        // Esto garantiza que la petición sea única a nivel de red, rompiendo cualquier caché HTTP estricta
-        params: {
-          _t: Date.now(),
         },
       },
     );
