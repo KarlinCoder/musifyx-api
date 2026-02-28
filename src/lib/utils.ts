@@ -1,3 +1,6 @@
+import fs from "node:fs";
+import path from "node:path";
+
 export const formatSecondsToMinutes = (seconds: number): string => {
   if (seconds < 0) seconds = 0;
   const mins = Math.floor(seconds / 60);
@@ -19,3 +22,14 @@ export function formatDateToSpanish(date: string | Date): string {
 
   return `${day} de ${monthName} del ${year}`;
 }
+
+export const getChatbotSystemPrompt = () => {
+  const filePath = "./src/prompts/chatbot_system_prompt.txt";
+
+  try {
+    const data = fs.readFileSync(filePath, "utf8");
+    return data;
+  } catch (err) {
+    console.error(err);
+  }
+};
