@@ -20,9 +20,9 @@ app.use("/search", deezerRouter);
 app.use("/agent", agentRouter);
 app.use("/download", downloadRoutes);
 
-app.get("/status", (req, res) => {
+app.get("/status", async (req, res) => {
   let pythonVersion = "";
-  exec("python --version", (error, stdout, stderr) => {
+  await exec("python3 --version", (error, stdout, stderr) => {
     if (error) {
       pythonVersion = error.message;
       return;
