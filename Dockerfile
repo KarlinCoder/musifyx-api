@@ -18,6 +18,7 @@ RUN corepack enable
 WORKDIR /app
 
 COPY package.json pnpm-lock.yaml ./
-RUN pnpm install --prod --frozen-lockfile
+RUN pnpm install
 
 COPY --from=builder /app/dist ./dist
+CMD [ "node", "dist/index.js" ]
