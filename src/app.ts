@@ -22,14 +22,14 @@ app.use("/download", downloadRoutes);
 
 app.get("/status", (req, res) => {
   let pythonVersion = "";
-  exec("python3 --version", (error, stdout, stderr) => {
-    if (error) {
-      pythonVersion = error.message;
-      return;
-    }
+  // exec("python3 --version", (error, stdout, stderr) => {
+  //   if (error) {
+  //     pythonVersion = error.message;
+  //     return;
+  //   }
 
-    pythonVersion = stdout;
-  });
+  //   pythonVersion = stdout;
+  // });
 
   res.json({ status: 400, message: "live", python_version: pythonVersion });
 });
