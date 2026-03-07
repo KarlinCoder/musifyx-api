@@ -21,4 +21,6 @@ COPY package.json pnpm-lock.yaml ./
 RUN pnpm install
 
 COPY --from=builder /app/dist ./dist
-CMD ["node", "dist/main.js"]
+
+EXPOSE 3000 
+CMD ["pnpm", "start"]
