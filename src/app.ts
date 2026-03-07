@@ -22,7 +22,7 @@ app.use("/download", downloadRoutes);
 
 app.get("/status", (req, res) => {
   let pythonVersion = "";
-  exec("python3 --version", (error, stdout, stderr) => {
+  exec("python --version", (error, stdout, stderr) => {
     if (error) {
       pythonVersion = error.message;
       return;
