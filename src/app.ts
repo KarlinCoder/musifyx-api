@@ -31,7 +31,7 @@ app.get("/status", (req, res) => {
     pythonVersion = stdout;
   });
 
-  res.json({ status: 400, message: "live" });
+  res.json({ status: 400, message: "live", python_version: pythonVersion });
 });
 
 export default app;
