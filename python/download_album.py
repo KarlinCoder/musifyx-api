@@ -1,0 +1,42 @@
+from deezspot.deezloader import DeeLogin
+import uuid
+from pathlib import Path
+import shutil
+from client import deezer_downloader
+import deezer
+from FileFormatter import file_formatter, move_files_to_parent
+
+deezer_client = deezer.Client()
+
+def download_album(albumId):
+    download_id = uuid.uuid4()
+    deezer_album = deezer_client.get_album(albumId)
+    folder_name = f"{deezer_album.artist.name} - {deezer_album.title} ({deezer_album.release_date.year})"
+
+    album_route = f"./downloads/albums/{download_id}/{folder_name}"
+
+    deezer_downloader.download_albumdee(
+        link_album=f'https://www.deezer.com/album/{albumId}',
+        output_dir=album_route,
+        quality_download='MP3_128',
+        recursive_quality=True,
+        recursive_download=True,
+    )
+    archivos = Path(album_route).iterdir()
+
+    for archivo in archivos:
+        if archivo.is_file():
+            print(f"Procesando: {archivo}")
+            file_formatter(archivo, enumerate=True)
+
+    move_files_to_parent(folder_name)
+
+    zip_name = shutil.make_archive(
+        base_name=album_route,
+        format="zip",
+        root_dir=album_route
+    )
+
+    return f"Archivo guardado {zip_name}"
+
+    
