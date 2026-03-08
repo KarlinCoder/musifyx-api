@@ -28,7 +28,7 @@ def download_album(albumId):
         archivos = Path(album_route).iterdir()
 
         move_files_to_parent(album_route)
-        
+
         for archivo in archivos:
             if archivo.is_file():
                 file_formatter(archivo, enumerate=True)
@@ -44,7 +44,7 @@ def download_album(albumId):
         result = {
             "success": True,
             "download_id": str(download_id),
-            "download_url": f"{os.getenv("HOSTNAME", "https://musify.api.karlincoder.com")}/downloads/albums/{download_id}",
+            "download_url": f"{os.getenv("MUSIFY_HOSTNAME", "https://musify.api.karlincoder.com")}/downloads/albums/{download_id}",
         }
         print(json.dumps(result))  # ✅ Salida JSON para que Node.js la capture
         return result
