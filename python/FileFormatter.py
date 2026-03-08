@@ -2,7 +2,12 @@ import os
 from pathlib import Path
 import shutil
 from mutagen.easyid3 import EasyID3
+import re
 
+def sanitize_filename(filename: str) -> str:
+    safe_name = re.sub(r'[<>:"/\\|?*]', '-', filename)
+    safe_name = re.sub(r'\s+', ' ', safe_name)
+    return safe_name.strip()
 
 def file_formatter(file_path, enumerate=False):
     file = EasyID3(file_path)
@@ -18,7 +23,7 @@ def file_formatter(file_path, enumerate=False):
     else:
         new_filename = f"{artista} - {titulo}"
 
-    new_file_path = file_path.with_name(f"{new_filename}.mp3")
+    new_file_path = file_path.with_name(f"{sanitize_filename(new_filename)}.mp3")
     file_path.rename(new_file_path)
     
     
@@ -37,3 +42,4 @@ def move_files_to_parent(folder):
     for subfolder in folder_path.iterdir():
         if subfolder.is_dir():
             shutil.rmtree(subfolder)
+            
