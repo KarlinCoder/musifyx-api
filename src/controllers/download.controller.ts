@@ -4,7 +4,7 @@ import { promisify } from "util";
 import path from "node:path";
 
 const execPromise = promisify(exec);
-const scriptPath = path.join(process.cwd(), "python", "download.py");
+const scriptPath = path.join(process.cwd(), "python3", "download.py");
 
 export const downloadAlbum = async (req: Request, res: Response) => {
   const albumId = Number(req.params.id);
