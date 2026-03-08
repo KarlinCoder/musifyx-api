@@ -25,11 +25,10 @@ app.use("/download", downloadRoutes);
 
 app.get("/status", async (req, res) => {
   try {
-    // Esperamos a que el comando termine
     const { stdout, stderr } = await execPromise("python3 --version");
 
     res.json({
-      status: 200, // Cambié a 200 porque 400 suele ser para errores
+      status: 200,
       message: "live",
       python_version: stdout.trim() || stderr.trim(),
     });

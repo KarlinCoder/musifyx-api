@@ -1,4 +1,5 @@
 import click
+from download_album import download_album
 
 @click.group()
 def cli():
@@ -8,7 +9,8 @@ def cli():
 @click.argument('id')
 @click.option('--lyrics', type=click.Choice(['synced', 'plain', 'none'], case_sensitive=False), default='none')
 def album(id, lyrics):
-    click.echo(f"Downloading album {id} with lyrics: {lyrics}")
+    download_album(id)
+    
 
 @cli.command()
 @click.argument('id')

@@ -1,11 +1,17 @@
-import { exec, execSync } from "child_process";
+import { exec } from "child_process";
 import { Request, Response } from "express";
+import { promisify } from "util";
+import path from "node:path";
 
-export const downloadAlbum = (req: Request, res: Response) => {
-  console.log("aca");
-  exec("python --version", (err, stdout) => {
-    res.json({ message: "Album descargado exitosamente", data: stdout.trim() });
-  });
+const execPromise = promisify(exec);
+const scriptPath = path.join(process.cwd(), "python", "download.py");
+
+export const downloadAlbum = async (req: Request, res: Response) => {
+  const albumId = Number(req.params.id);
+  const downloadedAlbumZipPath = await execPromise(
+    `${scriptPath} album ${albumId} --lyrics none`,
+  );
+  res.json({ downloadedAlbumZipPath });
 };
 
 export const downloadTack = async (req: Request, res: Response) => {
