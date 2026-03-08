@@ -1,3 +1,4 @@
+import json
 from deezspot.deezloader import DeeLogin
 import uuid
 from pathlib import Path
@@ -9,34 +10,50 @@ from FileFormatter import file_formatter, move_files_to_parent
 deezer_client = deezer.Client()
 
 def download_album(albumId):
-    download_id = uuid.uuid4()
-    deezer_album = deezer_client.get_album(albumId)
-    folder_name = f"{deezer_album.artist.name} - {deezer_album.title} ({deezer_album.release_date.year})"
+    try:
+        download_id = uuid.uuid4()
+        deezer_album = deezer_client.get_album(albumId)
+        folder_name = f"{deezer_album.artist.name} - {deezer_album.title} ({deezer_album.release_date.year})"
 
-    album_route = f"./downloads/albums/{download_id}/{folder_name}"
+        album_route = f"./downloads/albums/{download_id}/{folder_name}"
 
-    deezer_downloader.download_albumdee(
-        link_album=f'https://www.deezer.com/album/{albumId}',
-        output_dir=album_route,
-        quality_download='MP3_128',
-        recursive_quality=True,
-        recursive_download=True,
-    )
-    archivos = Path(album_route).iterdir()
+        deezer_downloader.download_albumdee(
+            link_album=f'https://www.deezer.com/album/{albumId}',
+            output_dir=album_route,
+            quality_download='MP3_128',
+            recursive_quality=True,
+            recursive_download=True,
+        )
+        archivos = Path(album_route).iterdir()
 
-    for archivo in archivos:
-        if archivo.is_file():
-            print(f"Procesando: {archivo}")
-            file_formatter(archivo, enumerate=True)
+        for archivo in archivos:
+            if archivo.is_file():
+                print(f"Procesando: {archivo}")
+                file_formatter(archivo, enumerate=True)
 
-    move_files_to_parent(album_route)
+        move_files_to_parent(album_route)
 
-    zip_name = shutil.make_archive(
-        base_name=album_route,
-        format="zip",
-        root_dir=album_route
-    )
+        zip_path = shutil.make_archive(
+            base_name=album_route,
+            format="zip",
+            root_dir=album_route
+        )
 
-    return f"Archivo guardado {zip_name}"
+        # ✅ Devolver JSON con la ruta relativa para servir vía HTTP
+        result = {
+            "success": True,
+            "zip_path": str(zip_path),
+            "download_url": f"/downloads/albums/{zip_path.name}",  # URL relativa para el frontend
+            "filename": zip_path.name,
+            "size_mb": round(zip_path.stat().st_size / (1024 * 1024), 2)
+        }
+        print(json.dumps(result))  # ✅ Salida JSON para que Node.js la capture
+        return result
+    
+    except Exception as e:
+        # ✅ En caso de error, devolver JSON de error
+        error_result = {"success": False, "error": str(e)}
+        print(json.dumps(error_result))
+        return error_result
 
     

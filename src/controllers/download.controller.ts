@@ -12,7 +12,7 @@ export const downloadAlbum = async (req: Request, res: Response) => {
   const downloadedAlbumZipPath = await execPromise(
     `python3 ${scriptPath} album ${albumId}`,
   );
-  res.json({ downloadedAlbumZipPath });
+  res.json({ album_url: downloadedAlbumZipPath.stdout });
 };
 
 export const downloadTack = async (req: Request, res: Response) => {
