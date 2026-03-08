@@ -42,10 +42,8 @@ def download_album(albumId):
         # ✅ Devolver JSON con la ruta relativa para servir vía HTTP
         result = {
             "success": True,
-            "zip_path": str(zip_path),
-            "download_url": f"/downloads/albums/{os.path.basename(zip_path)}",  # URL relativa para el frontend
-            "filename": zip_path.name,
-            "size_mb": round(zip_path.stat().st_size / (1024 * 1024), 2)
+            "zip_path": zip_path,
+            "download_url": f"/downloads/albums/{os.path.basename(zip_path)}",
         }
         print(json.dumps(result))  # ✅ Salida JSON para que Node.js la capture
         return result
