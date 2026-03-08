@@ -9,10 +9,10 @@ console.log(scriptPath);
 
 export const downloadAlbum = async (req: Request, res: Response) => {
   const albumId = Number(req.params.id);
-  const downloadedAlbumZipPath = await execPromise(
+  const { stdout } = await execPromise(
     `python3 ${scriptPath} album ${albumId}`,
   );
-  res.json({ album_url: downloadedAlbumZipPath.stdout });
+  res.json({ album_url: JSON.parse(stdout.trim()) });
 };
 
 export const downloadTack = async (req: Request, res: Response) => {
