@@ -14,7 +14,6 @@ def file_formatter(file_path, enumerate=False):
     if enumerate:
         basename = os.path.basename(str(file_path))
         track_number = basename.split('|')[1].split(' - ')[0]
-        print(f"Track number: {track_number}")
         new_filename = f"{track_number}. {artista} - {titulo}"
     else:
         new_filename = f"{artista} - {titulo}"
@@ -31,12 +30,10 @@ def move_files_to_parent(folder):
                 destino = folder_path / file_path.name
                 
                 if destino.exists():
-                    print(f"Omitiendo: {file_path.name} ya existe en la raíz.")
+                    pass
                 else:
                     shutil.move(str(file_path), str(destino))
-                    print(f"Movido: {file_path.name}")
     
     for subfolder in folder_path.iterdir():
         if subfolder.is_dir():
             shutil.rmtree(subfolder)
-            print(f"Carpeta eliminada: {subfolder.name}")
