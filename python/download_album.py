@@ -28,7 +28,6 @@ def download_album(albumId):
 
         for archivo in archivos:
             if archivo.is_file():
-                print(f"Procesando: {archivo}")
                 file_formatter(archivo, enumerate=True)
 
         move_files_to_parent(album_route)
