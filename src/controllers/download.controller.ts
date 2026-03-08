@@ -19,7 +19,7 @@ export const downloadAlbum = async (req: Request, res: Response) => {
   });
 
   process.on("exit", () => {
-    const parsedResponse = response.split("\n")[1];
+    const parsedResponse = JSON.parse(response.split("\n")[1]);
     res.json({ album_url: parsedResponse });
   });
 };
