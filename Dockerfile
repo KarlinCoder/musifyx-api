@@ -17,6 +17,10 @@ RUN corepack enable
 
 WORKDIR /app
 
+COPY python/ ./python/
+WORKDIR /app/python
+
+
 COPY package.json pnpm-lock.yaml ./
 RUN pnpm install
 
