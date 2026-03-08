@@ -42,8 +42,9 @@ def download_album(albumId):
         # ✅ Devolver JSON con la ruta relativa para servir vía HTTP
         result = {
             "success": True,
+            "download_id": download_id,
             "zip_path": zip_path,
-            "download_url": f"/downloads/albums/{os.path.basename(zip_path)}",
+            "download_url": f"{os.getenv("HOSTNAME", "https://musify.api.karlincoder.com")}/downloads/albums/{download_id}",
         }
         print(json.dumps(result))  # ✅ Salida JSON para que Node.js la capture
         return result

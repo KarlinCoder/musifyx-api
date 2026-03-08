@@ -6,6 +6,7 @@ import { agentRouter } from "./routes/agent.routes";
 import { downloadRoutes } from "./routes/download.routes";
 import { exec } from "node:child_process";
 import { promisify } from "node:util";
+import { downloadsRoutes } from "./routes/downloads.routes";
 
 const execPromise = promisify(exec);
 
@@ -22,6 +23,7 @@ app.get("/", (req, res) => {
 app.use("/search", deezerRouter);
 app.use("/agent", agentRouter);
 app.use("/download", downloadRoutes);
+app.use("/downloads", downloadsRoutes);
 
 app.get("/status", async (req, res) => {
   try {
