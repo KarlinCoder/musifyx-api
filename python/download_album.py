@@ -27,11 +27,12 @@ def download_album(albumId):
         )
         archivos = Path(album_route).iterdir()
 
+        move_files_to_parent(album_route)
+        
         for archivo in archivos:
             if archivo.is_file():
                 file_formatter(archivo, enumerate=True)
 
-        move_files_to_parent(album_route)
 
         zip_path = shutil.make_archive(
             base_name=album_route,
