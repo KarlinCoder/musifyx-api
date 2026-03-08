@@ -29,7 +29,7 @@ def download_album(albumId):
             print(f"Procesando: {archivo}")
             file_formatter(archivo, enumerate=True)
 
-    move_files_to_parent(folder_name)
+    move_files_to_parent(album_route)
 
     zip_name = shutil.make_archive(
         base_name=album_route,
