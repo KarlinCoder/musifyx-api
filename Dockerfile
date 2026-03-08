@@ -12,7 +12,7 @@ RUN pnpm build
 
 FROM node:24.12.0-alpine
 
-RUN apk add --no-cache python3 py3-pip
+RUN apk add --no-cache python3 py3-pip git
 RUN corepack enable
 
 WORKDIR /app
