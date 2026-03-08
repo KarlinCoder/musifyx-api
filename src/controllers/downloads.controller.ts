@@ -5,7 +5,12 @@ import fs from "node:fs";
 export const getAlbumZip = async (req: Request, res: Response) => {
   const { albumId } = req.params;
 
-  const albumZipDir = path.join(process.cwd(), "downloads", albumId.toString());
+  const albumZipDir = path.join(
+    process.cwd(),
+    "downloads",
+    "albums",
+    albumId.toString(),
+  );
 
   try {
     const files = fs.readdirSync(albumZipDir);
