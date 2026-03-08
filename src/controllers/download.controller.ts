@@ -4,12 +4,13 @@ import { promisify } from "util";
 import path from "node:path";
 
 const execPromise = promisify(exec);
-const scriptPath = path.join(process.cwd(), "python", "download.py");
+const scriptPath = path.resolve(process.cwd(), "python", "download.py");
+console.log(scriptPath);
 
 export const downloadAlbum = async (req: Request, res: Response) => {
   const albumId = Number(req.params.id);
   const downloadedAlbumZipPath = await execPromise(
-    `python3 ${scriptPath} album ${albumId} --lyrics none`,
+    `python3 ${scriptPath} album ${albumId}`,
   );
   res.json({ downloadedAlbumZipPath });
 };
