@@ -1,3 +1,6 @@
+click==8.3.1
+deezer_python==7.2.0
 deezspot==1.6
+mutagen==1.47.0
 Requests==2.32.5
 syrics==0.1.2.5
