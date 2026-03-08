@@ -17,6 +17,10 @@ RUN corepack enable
 
 WORKDIR /app
 
+COPY python/requirements.txt ./python/requirements.txt
+RUN pip3 install --no-cache-dir --break-system-packages -r ./python/requirements.txt
+
+
 COPY python/ ./python/
 
 
