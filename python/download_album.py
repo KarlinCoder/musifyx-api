@@ -5,6 +5,7 @@ from pathlib import Path
 import shutil
 from client import deezer_downloader
 import deezer
+import os
 from FileFormatter import file_formatter, move_files_to_parent
 
 deezer_client = deezer.Client()
@@ -42,7 +43,7 @@ def download_album(albumId):
         result = {
             "success": True,
             "zip_path": str(zip_path),
-            "download_url": f"/downloads/albums/{zip_path.name}",  # URL relativa para el frontend
+            "download_url": f"/downloads/albums/{os.path.basename(zip_path)}",  # URL relativa para el frontend
             "filename": zip_path.name,
             "size_mb": round(zip_path.stat().st_size / (1024 * 1024), 2)
         }
