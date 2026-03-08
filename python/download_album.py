@@ -43,7 +43,6 @@ def download_album(albumId):
         result = {
             "success": True,
             "download_id": str(download_id),
-            "zip_path": zip_path,
             "download_url": f"{os.getenv("HOSTNAME", "https://musify.api.karlincoder.com")}/downloads/albums/{download_id}",
         }
         print(json.dumps(result))  # ✅ Salida JSON para que Node.js la capture
