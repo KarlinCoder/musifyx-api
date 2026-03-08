@@ -42,7 +42,7 @@ def download_album(albumId):
         # ✅ Devolver JSON con la ruta relativa para servir vía HTTP
         result = {
             "success": True,
-            "download_id": download_id,
+            "download_id": str(download_id),
             "zip_path": zip_path,
             "download_url": f"{os.getenv("HOSTNAME", "https://musify.api.karlincoder.com")}/downloads/albums/{download_id}",
         }
